@@ -4,6 +4,7 @@ import (
 	"chapter3-sesi2/dto"
 	"chapter3-sesi2/entity"
 	"chapter3-sesi2/pkg/errs"
+	"chapter3-sesi2/pkg/helpers"
 	"chapter3-sesi2/repository/product_repository"
 	"net/http"
 )
@@ -37,8 +38,27 @@ func (p *productService) CreateProduct(userId int, payload dto.NewProductRequest
 }
 
 // UpdateProductById implements ProductService
-func (*productService) UpdateProductById(productId int, productRequest dto.NewProductRequest) (*dto.NewProductResponse, errs.MessageErr) {
-	panic("unimplemented")
+func (p *productService) UpdateProductById(productId int, productRequest dto.NewProductRequest) (*dto.NewProductResponse, errs.MessageErr) {
+	err := helpers.ValidateStruct(productRequest)
+	if err != nil {
+		return nil, err
+	}
+	payload := entity.Product{
+		Id:          productId,
+		Title:       productRequest.Title,
+		Description: productRequest.Description,
+		Price:       productRequest.Price,
+	}
+	err = p.productRepo.UpdateProductById(payload)
+	if err != nil {
+		return nil, err
+	}
+	response := dto.NewProductResponse{
+		StatusCode: http.StatusOK,
+		Result:     "success",
+		Message:    "product data successfully updated",
+	}
+	return &response, nil
 }
 
 func NewProductService(productRepo product_repository.ProductRepository) ProductService {

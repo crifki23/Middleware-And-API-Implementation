@@ -28,6 +28,7 @@ func (uh *userHandler) Register(ctx *gin.Context) {
 	result, err := uh.userService.CreateNewUser(newUserRequest)
 	if err != nil {
 		ctx.JSON(err.Status(), err)
+		return
 	}
 	ctx.JSON(result.StatusCode, result)
 }

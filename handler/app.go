@@ -32,5 +32,5 @@ func StartApp() {
 		productRoute.POST("/", authService.Aunthentication(), productHandler.CreateProduct)
 		productRoute.PUT("/:productId", authService.Aunthentication(), authService.Authorization(), productHandler.UpdateProductById)
 	}
-	route.Run(":", port)
+	route.Run(":" + port)
 }

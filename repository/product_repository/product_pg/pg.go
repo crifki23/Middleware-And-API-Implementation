@@ -19,13 +19,23 @@ const (
 		UPDATE "products"
 		SET title = $2,
 		description = $3,
-		price = $4
+		price = $4,
+		updateAt = $5
 		WHERE id = $1;
 	`
 )
 
 type productPG struct {
 	db *sql.DB
+}
+
+// UpdateProductById implements product_repository.ProductRepository
+func (p *productPG) UpdateProductById(payload entity.Product) errs.MessageErr {
+	_, err := p.db.Exec(updateProductByIdQuery, payload.Id, payload.Title, payload.Description, payload.Price)
+	if err != nil {
+		return errs.NewInternalServerError("something went wrong")
+	}
+	return nil
 }
 
 func NewProductPG(db *sql.DB) product_repository.ProductRepository {
@@ -80,14 +90,4 @@ func (p *productPG) GetProductById(productId int) (*entity.Product, errs.Message
 	}
 
 	return &product, nil
-}
-func (p *productPG) UpdateProductById(payload entity.Product) errs.MessageErr {
-	_, err := p.db.Exec(updateProductByIdQuery, payload.Id, payload.Title, payload.Description, payload.Price)
-
-	if err != nil {
-
-		return errs.NewInternalServerError("something went wrong")
-	}
-
-	return nil
 }

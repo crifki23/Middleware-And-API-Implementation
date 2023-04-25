@@ -12,7 +12,7 @@ var (
 	host     = "localhost"
 	port     = "5432"
 	user     = "postgres"
-	password = "postgres"
+	password = "397150"
 	dbname   = "h8-product"
 	dialect  = "postgres"
 )
@@ -44,7 +44,7 @@ func handleCreateRequiredTables() {
 			id SERIAL PRIMARY KEY,
 			email VARCHAR(255) UNIQUE NOT NULL,
 			password TEXT NOT NULL,
-			level varchar(100) NOT NULL DEFAULT "customer",
+			level varchar(100) NOT NULL DEFAULT 'customer',
 			createdAt timestamptz DEFAULT now(),
 			updatedAt timestamptz DEFAULT now()
 		);

@@ -4,7 +4,7 @@ import "time"
 
 type NewProductRequest struct {
 	Title       string `json:"title" valid:"required~title cannot be empty" example:"Jelangkung"`
-	Description string `json:"imageUrl" valid:"required~description cannot be empty" example:"Cerita fiktif dari Indonesia"`
+	Description string `json:"description" valid:"required~description cannot be empty" example:"Cerita fiktif dari Indonesia"`
 	Price       int    `json:"price" valid:"required~price cannot be empty" example:"20000"`
 }
 type NewProductResponse struct {
