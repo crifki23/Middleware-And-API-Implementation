@@ -19,14 +19,36 @@ const (
 		UPDATE "products"
 		SET title = $2,
 		description = $3,
-		price = $4,
-		updateAt = $5
+		price = $4
 		WHERE id = $1;
+	`
+	deleteBookByIdQuery = `
+		DELETE FROM "products" WHERE id = $1;
+	`
+	getProductQuery = `
+		SELECT id, title, description, price, userId, createdAt, updatedAt from "products"
+		WHERE userId = $1;
 	`
 )
 
 type productPG struct {
 	db *sql.DB
+}
+
+// DeleteProductById implements product_repository.ProductRepository
+func (p *productPG) DeleteProductById(productId int) errs.MessageErr {
+	result, err := p.db.Exec(deleteBookByIdQuery, productId)
+	if err != nil {
+		return errs.NewInternalServerError("something went wrong")
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return errs.NewInternalServerError("something went wrong")
+	}
+	if rowsAffected == 0 {
+		return errs.NewNotFoundError("product not found")
+	}
+	return nil
 }
 
 // UpdateProductById implements product_repository.ProductRepository
@@ -45,8 +67,22 @@ func NewProductPG(db *sql.DB) product_repository.ProductRepository {
 }
 
 // GetMovies implements product_repository.ProductRepository
-func (*productPG) GetMovies() ([]*entity.Product, errs.MessageErr) {
-	return nil, nil
+func (p *productPG) GetProduct(userId int) ([]*entity.Product, errs.MessageErr) {
+	rows, err := p.db.Query(getProductQuery, userId)
+	if err != nil {
+		return nil, errs.NewInternalServerError("something went wrong")
+	}
+	defer rows.Close()
+	products := []*entity.Product{}
+	for rows.Next() {
+		var product entity.Product
+		err = rows.Scan(&product.Id, &product.Title, &product.Description, &product.Price, &product.UserId, &product.CreatedAt, &product.UpdatedAt)
+		if err != nil {
+			return nil, errs.NewInternalServerError("something went wrong")
+		}
+		products = append(products, &product)
+	}
+	return products, nil
 }
 
 func (p *productPG) CreateProduct(productPayload *entity.Product) (*entity.Product, errs.MessageErr) {
@@ -74,20 +110,16 @@ func (p *productPG) CreateProduct(productPayload *entity.Product) (*entity.Produ
 
 	return &product, nil
 }
+
 func (p *productPG) GetProductById(productId int) (*entity.Product, errs.MessageErr) {
 	row := p.db.QueryRow(getProductByIdQuery, productId)
-
 	var product entity.Product
-
-	err := row.Scan(&product.Id, &product.Title, &product.UserId, &product.Description, &product.Price, &product.CreatedAt, &product.UpdatedAt)
-
+	err := row.Scan(&product.Id, &product.Title, &product.Description, &product.Price, &product.UserId, &product.CreatedAt, &product.UpdatedAt)
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
 			return nil, errs.NewNotFoundError("product not found")
 		}
-
 		return nil, errs.NewInternalServerError("something went wrong")
 	}
-
 	return &product, nil
 }

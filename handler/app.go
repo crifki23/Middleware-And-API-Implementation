@@ -30,7 +30,9 @@ func StartApp() {
 	productRoute := route.Group("/products")
 	{
 		productRoute.POST("/", authService.Aunthentication(), productHandler.CreateProduct)
+		productRoute.GET("/", authService.Aunthentication(), productHandler.GetProduct)
 		productRoute.PUT("/:productId", authService.Aunthentication(), authService.Authorization(), productHandler.UpdateProductById)
+		productRoute.DELETE("/:productId", authService.Aunthentication(), authService.Authorization(), productHandler.DeleteProductById)
 	}
 	route.Run(":" + port)
 }

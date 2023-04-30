@@ -24,7 +24,6 @@ func (p productHandler) CreateProduct(ctx *gin.Context) {
 	var productRequest dto.NewProductRequest
 	if err := ctx.ShouldBindJSON(&productRequest); err != nil {
 		errBindJson := errs.NewUnprocessibleEntityError("invalid request body")
-
 		ctx.JSON(errBindJson.Status(), errBindJson)
 		return
 	}
@@ -35,6 +34,15 @@ func (p productHandler) CreateProduct(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusCreated, newProduct)
+}
+func (p productHandler) GetProduct(ctx *gin.Context) {
+	user := ctx.MustGet("userData").(entity.User)
+	response, err := p.productService.GetProduct(user.Id)
+	if err != nil {
+		ctx.JSON(err.Status(), err)
+		return
+	}
+	ctx.JSON(response.StatusCode, response)
 }
 func (p productHandler) UpdateProductById(ctx *gin.Context) {
 	var productRequest dto.NewProductRequest
@@ -59,5 +67,17 @@ func (p productHandler) UpdateProductById(ctx *gin.Context) {
 		return
 	}
 
+	ctx.JSON(response.StatusCode, response)
+}
+func (p productHandler) DeleteProductById(ctx *gin.Context) {
+	productId, err := helpers.GetParamId(ctx, "productId")
+	if err != nil {
+		ctx.AbortWithStatusJSON(err.Status(), err)
+		return
+	}
+	response, err := p.productService.DeleteProductById(productId)
+	if err != nil {
+		ctx.AbortWithStatusJSON(err.Status(), err)
+	}
 	ctx.JSON(response.StatusCode, response)
 }
